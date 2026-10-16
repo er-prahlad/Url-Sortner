@@ -1,0 +1,31 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=false;MODE=MySQL
+    username: sa
+    password: ""
+    driver-class-name: org.h2.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+
+  flyway:
+    enabled: false      # H2 in-memory; Hibernate creates schema directly
+
+app:
+  base-url: http://localhost:8080
+  cors:
+    allowed-origins: http://localhost:5173
+  jwt:
+    secret: dGVzdC1zZWNyZXQta2V5LWZvci11bml0LXRlc3RzLW9ubHkAAAAAAAAAAAAA
+    access-token-expiry: 900000
+    refresh-token-expiry: 604800000
+  rate-limit:
+    auth-max-requests: 1000
+    link-max-requests: 10000
+    window-seconds: 60
+  link-expiry-check-ms: 99999999
