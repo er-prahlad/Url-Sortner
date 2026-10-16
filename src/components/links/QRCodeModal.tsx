@@ -1,0 +1,138 @@
+import { useEffect, useRef, useState } from "react";
+import QRCode from "qrcode";
+import { Download, Loader2 } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import type { ShortLink } from "@/types";
+
+interface QRCodeModalProps {
+  open: boolean;
+  onClose: () => void;
+  link: ShortLink;
+}
+
+export function QRCodeModal({ open, onClose, link }: QRCodeModalProps) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [size, setSize] = useState(256);
+  const [fg, setFg] = useState("#000000");
+  const [bg, setBg] = useState("#ffffff");
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!open || !canvasRef.current) return;
+    setLoading(true);
+    QRCode.toCanvas(canvasRef.current, link.shortUrl, {
+      width: size,
+      color: { dark: fg, light: bg },
+      errorCorrectionLevel: "H",
+    })
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, [open, link.shortUrl, size, fg, bg]);
+
+  const downloadPNG = () => {
+    if (!canvasRef.current) return;
+    const a = document.createElement("a");
+    a.download = `linkshort-qr-${link.shortCode}.png`;
+    a.href = canvasRef.current.toDataURL("image/png");
+    a.click();
+  };
+
+  const downloadSVG = async () => {
+    const svgStr = await QRCode.toString(link.shortUrl, {
+      type: "svg",
+      color: { dark: fg, light: bg },
+    });
+    const blob = new Blob([svgStr], { type: "image/svg+xml" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.download = `linkshort-qr-${link.shortCode}.svg`;
+    a.href = url;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>QR Code</DialogTitle>
+          <DialogDescription className="url-truncate text-xs">{link.shortUrl}</DialogDescription>
+        </DialogHeader>
+
+        <div className="flex flex-col items-center gap-4">
+          {/* Canvas */}
+          <div className="relative rounded-xl overflow-hidden border bg-white p-3">
+            {loading && (
+              <div className="absolute inset-0 flex items-center justify-center bg-white/80">
+                <Loader2 className="h-6 w-6 animate-spin text-primary" />
+              </div>
+            )}
+            <canvas ref={canvasRef} className="block" />
+          </div>
+
+          {/* Options */}
+          <div className="w-full grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label className="text-xs">Size: {size}px</Label>
+              <input
+                type="range"
+                min={128}
+                max={512}
+                step={32}
+                value={size}
+                onChange={(e) => setSize(+e.target.value)}
+                className="w-full accent-primary"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-1.5">
+                <Label className="text-xs">Foreground</Label>
+                <div className="flex items-center gap-1.5">
+                  <input
+                    type="color"
+                    value={fg}
+                    onChange={(e) => setFg(e.target.value)}
+                    className="h-8 w-8 cursor-pointer rounded border p-0.5"
+                  />
+                  <span className="text-xs text-muted-foreground">{fg}</span>
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Background</Label>
+                <div className="flex items-center gap-1.5">
+                  <input
+                    type="color"
+                    value={bg}
+                    onChange={(e) => setBg(e.target.value)}
+                    className="h-8 w-8 cursor-pointer rounded border p-0.5"
+                  />
+                  <span className="text-xs text-muted-foreground">{bg}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Download buttons */}
+          <div className="flex gap-2 w-full">
+            <Button className="flex-1" onClick={downloadPNG}>
+              <Download className="h-4 w-4" />
+              PNG
+            </Button>
+            <Button variant="outline" className="flex-1" onClick={downloadSVG}>
+              <Download className="h-4 w-4" />
+              SVG
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
