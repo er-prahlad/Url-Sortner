@@ -32,8 +32,6 @@ export const createLinkSchema = z.object({
 
 export type CreateLinkFormData = z.infer<typeof createLinkSchema>;
 
-// ─── Auth ──────────────────────────────────────────────────────────────────
-
 export const loginSchema = z.object({
   email: z
     .string()
@@ -84,8 +82,6 @@ export const forgotPasswordSchema = z.object({
 
 export type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
 
-// ─── Link Editing ──────────────────────────────────────────────────────────
-
 export const editLinkSchema = z.object({
   customAlias: z
     .string()
@@ -99,8 +95,6 @@ export const editLinkSchema = z.object({
 });
 
 export type EditLinkFormData = z.infer<typeof editLinkSchema>;
-
-// ─── Settings ──────────────────────────────────────────────────────────────
 
 export const profileSchema = z.object({
   name: z
@@ -131,13 +125,8 @@ export const changePasswordSchema = z
 
 export type ChangePasswordFormData = z.infer<typeof changePasswordSchema>;
 
-// ─── UTM Builder ───────────────────────────────────────────────────────────
-
 export const utmSchema = z.object({
-  baseUrl: z
-    .string()
-    .min(1, "Base URL is required")
-    .url("Please enter a valid URL"),
+  baseUrl: z.string().min(1, "Base URL is required").url("Please enter a valid URL"),
   source: z.string().min(1, "Source is required"),
   medium: z.string().optional(),
   campaign: z.string().optional(),
