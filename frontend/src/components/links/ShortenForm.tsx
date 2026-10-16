@@ -37,7 +37,16 @@ export function ShortenForm({ onSuccess, compact }: ShortenFormProps) {
       onSuccess?.(link);
       reset();
     } catch (err) {
-      setApiError(err instanceof Error ? err.message : "Failed to shorten URL. Please try again.");
+      const msg = err instanceof Error ? err.message : "Failed to shorten URL. Please try again.";
+      // Surface backend-not-running errors clearly
+      const isNetworkErr = msg.toLowerCase().includes("cannot connect") ||
+                           msg.toLowerCase().includes("network") ||
+                           msg.toLowerCase().includes("server");
+      setApiError(
+        isNetworkErr
+          ? "Backend server is not reachable. Start your Spring Boot server on port 8080 and try again."
+          : msg
+      );
     } finally {
       setIsLoading(false);
     }
@@ -121,7 +130,14 @@ export function ShortenForm({ onSuccess, compact }: ShortenFormProps) {
 
       {apiError && (
         <div className="rounded-md bg-destructive/10 border border-destructive/20 px-4 py-3 text-sm text-destructive">
-          {apiError}
+          <p className="font-medium">Error</p>
+          <p className="mt-0.5">{apiError}</p>
+          {(apiError.includes("not reachable") || apiError.includes("connect")) && (
+            <p className="mt-2 text-xs opacity-80">
+              Make sure your backend is running:{" "}
+              <code className="bg-destructive/10 px-1 rounded">cd backend &amp;&amp; mvn spring-boot:run</code>
+            </p>
+          )}
         </div>
       )}
 

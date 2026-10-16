@@ -39,15 +39,25 @@ server:
   servlet:
     context-path: /
   error:
-    include-message: never        # Never expose internal error messages
+    include-message: never
     include-stacktrace: never
     include-exception: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
 
 # ── Application properties ────────────────────────────────────────────────────
 app:
   base-url: ${APP_BASE_URL:http://localhost:8080}
 
   cors:
+    # Add your Vercel frontend URL here, e.g. https://linkshort.vercel.app
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173,http://localhost:3000}
 
   jwt:

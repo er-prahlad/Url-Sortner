@@ -1,0 +1,25 @@
+# ── Production profile (Render, Railway, Fly.io, etc.) ───────────────────────
+# Activated by SPRING_PROFILES_ACTIVE=prod
+
+spring:
+  jpa:
+    show-sql: false
+    hibernate:
+      ddl-auto: validate
+
+  flyway:
+    enabled: true
+
+server:
+  port: ${PORT:8080}          # Render injects PORT automatically
+
+app:
+  base-url: ${APP_BASE_URL}   # e.g. https://linkshort-backend.onrender.com
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS}  # e.g. https://linkshort-frontend.onrender.com
+
+logging:
+  level:
+    root: WARN
+    com.linkshort: INFO
+    org.springframework.security: WARN

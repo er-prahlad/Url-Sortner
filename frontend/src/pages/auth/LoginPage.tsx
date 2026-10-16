@@ -29,8 +29,14 @@ export function LoginPage() {
       await login(data.email, data.password);
       navigate(from, { replace: true });
     } catch (err) {
+      const msg = err instanceof Error ? err.message : "Login failed. Please check your credentials.";
+      const isNetwork = msg.toLowerCase().includes("cannot connect") ||
+                        msg.toLowerCase().includes("network") ||
+                        msg.toLowerCase().includes("server");
       setError("root", {
-        message: err instanceof Error ? err.message : "Login failed. Please check your credentials.",
+        message: isNetwork
+          ? "Cannot reach the server. Make sure the backend is running on port 8080."
+          : msg,
       });
     }
   };
