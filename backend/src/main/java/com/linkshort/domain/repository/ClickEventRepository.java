@@ -23,26 +23,28 @@ public interface ClickEventRepository extends JpaRepository<ClickEvent, Long> {
         """)
     long countUniqueClicksByLinkId(@Param("linkId") Long linkId);
 
-    @Query("""
-        SELECT FUNCTION('DATE', c.clickedAt) AS day, COUNT(c) AS cnt
-        FROM ClickEvent c
-        WHERE c.link.id = :linkId
-          AND c.clickedAt >= :since
-        GROUP BY FUNCTION('DATE', c.clickedAt)
-        ORDER BY FUNCTION('DATE', c.clickedAt)
-        """)
+    // CAST(... AS date) works on PostgreSQL and CockroachDB
+    @Query(value = """
+        SELECT CAST(clicked_at AS date) AS day, COUNT(*) AS cnt
+        FROM click_events
+        WHERE link_id = :linkId
+          AND clicked_at >= :since
+        GROUP BY CAST(clicked_at AS date)
+        ORDER BY CAST(clicked_at AS date)
+        """, nativeQuery = true)
     List<Object[]> findDailyClicksByLinkId(
             @Param("linkId") Long linkId,
             @Param("since") LocalDateTime since);
 
-    @Query("""
-        SELECT FUNCTION('DATE', c.clickedAt) AS day, COUNT(c) AS cnt
-        FROM ClickEvent c
-        WHERE c.link.user.id = :userId
-          AND c.clickedAt >= :since
-        GROUP BY FUNCTION('DATE', c.clickedAt)
-        ORDER BY FUNCTION('DATE', c.clickedAt)
-        """)
+    @Query(value = """
+        SELECT CAST(ce.clicked_at AS date) AS day, COUNT(*) AS cnt
+        FROM click_events ce
+        INNER JOIN links l ON ce.link_id = l.id
+        WHERE l.user_id = :userId
+          AND ce.clicked_at >= :since
+        GROUP BY CAST(ce.clicked_at AS date)
+        ORDER BY CAST(ce.clicked_at AS date)
+        """, nativeQuery = true)
     List<Object[]> findDailyClicksByUserId(
             @Param("userId") Long userId,
             @Param("since") LocalDateTime since);
@@ -107,13 +109,14 @@ public interface ClickEventRepository extends JpaRepository<ClickEvent, Long> {
         """)
     List<Object[]> findClicksByReferrerForLink(@Param("linkId") Long linkId);
 
-    @Query("""
+    @Query(value = """
         SELECT SUM(cnt) FROM (
-          SELECT COUNT(c) AS cnt
-          FROM ClickEvent c
-          WHERE c.link.user.id = :userId
-          GROUP BY c.link.id
+          SELECT COUNT(*) AS cnt
+          FROM click_events ce
+          INNER JOIN links l ON ce.link_id = l.id
+          WHERE l.user_id = :userId
+          GROUP BY ce.link_id
         ) sub
-        """)
+        """, nativeQuery = true)
     Long sumTotalClicksByUserId(@Param("userId") Long userId);
 }

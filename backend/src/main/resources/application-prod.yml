@@ -1,25 +1,50 @@
-# ── Production profile (Render, Railway, Fly.io, etc.) ───────────────────────
-# Activated by SPRING_PROFILES_ACTIVE=prod
+# ── Production profile ────────────────────────────────────────────────────────
+# Activated on Render via SPRING_PROFILES_ACTIVE=prod
 
 spring:
+  datasource:
+    # All three MUST be set in the Render dashboard as env vars.
+    # No localhost fallback in production.
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 5
+      minimum-idle: 1
+      connection-timeout: 30000
+      idle-timeout: 300000
+      max-lifetime: 600000
+      data-source-properties:
+        prepareThreshold: 0
+        preparedStatementCacheQueries: 0
+
   jpa:
     show-sql: false
     hibernate:
       ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
 
   flyway:
     enabled: true
+    url: ${DB_URL}
+    user: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
 
 server:
-  port: ${PORT:8080}          # Render injects PORT automatically
+  port: ${PORT:10000}
 
 app:
-  base-url: ${APP_BASE_URL}   # e.g. https://linkshort-backend.onrender.com
+  base-url: ${APP_BASE_URL}
   cors:
-    allowed-origins: ${CORS_ALLOWED_ORIGINS}  # e.g. https://linkshort-frontend.onrender.com
+    allowed-origins: ${CORS_ALLOWED_ORIGINS}
 
 logging:
   level:
     root: WARN
     com.linkshort: INFO
     org.springframework.security: WARN
+    com.zaxxer.hikari: INFO
+    org.flywaydb: INFO

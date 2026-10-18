@@ -51,7 +51,7 @@ public interface LinkRepository extends JpaRepository<Link, Long> {
     Long sumClicksByUserId(@Param("userId") Long userId);
 
     @Modifying
-    @Query("UPDATE Link l SET l.status = 'EXPIRED' WHERE l.expiresAt < :now AND l.status = 'ACTIVE'")
+    @Query("UPDATE Link l SET l.status = com.linkshort.domain.entity.Link.LinkStatus.EXPIRED WHERE l.expiresAt < :now AND l.status = com.linkshort.domain.entity.Link.LinkStatus.ACTIVE")
     int expireLinks(@Param("now") LocalDateTime now);
 
     @Query("SELECT l FROM Link l WHERE l.user.id = :userId ORDER BY l.clicks DESC")
