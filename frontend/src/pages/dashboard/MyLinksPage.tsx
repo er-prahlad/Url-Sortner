@@ -362,6 +362,7 @@ export function MyLinksPage() {
             <DialogTitle>Create New Link</DialogTitle>
           </DialogHeader>
           <ShortenForm
+            authenticated
             onSuccess={() => {
               setCreateOpen(false);
               toast({ title: "Link created successfully!", variant: "success" });

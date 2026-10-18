@@ -13,9 +13,10 @@ import { cn } from "@/lib/utils";
 interface ShortenFormProps {
   onSuccess?: (link: ShortLink) => void;
   compact?: boolean;
+  authenticated?: boolean;  // true = use /links (JWT), false = use /links/public
 }
 
-export function ShortenForm({ onSuccess, compact }: ShortenFormProps) {
+export function ShortenForm({ onSuccess, compact, authenticated = false }: ShortenFormProps) {
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
@@ -33,7 +34,9 @@ export function ShortenForm({ onSuccess, compact }: ShortenFormProps) {
     setIsLoading(true);
     setApiError(null);
     try {
-      const link = await linksService.create(data);
+      const link = await (authenticated
+        ? linksService.createAuthenticated(data)
+        : linksService.create(data));
       onSuccess?.(link);
       reset();
     } catch (err) {

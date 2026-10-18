@@ -5,6 +5,7 @@ import com.linkshort.domain.entity.Link;
 import com.linkshort.domain.entity.Link.LinkStatus;
 import com.linkshort.domain.entity.User;
 import com.linkshort.domain.repository.LinkRepository;
+import com.linkshort.domain.repository.UserRepository;
 import com.linkshort.exception.*;
 import com.linkshort.feature.link.dto.*;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +28,7 @@ public class LinkService {
     private final ShortCodeGenerator codeGenerator;
     private final UrlValidator urlValidator;
     private final PasswordEncoder passwordEncoder;
+    private final UserRepository userRepository;
 
     @Value("${app.base-url}")
     private String baseUrl;
@@ -54,6 +56,16 @@ public class LinkService {
                 .build();
 
         return LinkResponse.from(linkRepository.save(link), baseUrl);
+    }
+
+    // ── Create (anonymous — no login required) ──────────────────────────────
+
+    @Transactional
+    public LinkResponse createAnonymous(CreateLinkRequest req) {
+        User anonymous = userRepository.findByEmail("anonymous@system.internal")
+                .orElseThrow(() -> new BadRequestException(
+                        "Anonymous user not configured. Run database migrations."));
+        return create(req, anonymous);
     }
 
     // ── Bulk Create ─────────────────────────────────────────────────────────

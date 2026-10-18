@@ -28,7 +28,24 @@ function mapLink(raw: Record<string, unknown>): ShortLink {
 }
 
 export const linksService = {
+  /**
+   * Public create — no auth token needed.
+   * Used by the homepage shortener form for anonymous users.
+   */
   async create(payload: CreateLinkPayload): Promise<ShortLink> {
+    const { data } = await apiClient.post("/links/public", {
+      originalUrl: payload.originalUrl,
+      customAlias: payload.customAlias ?? undefined,
+      expiresAt:   payload.expiresAt ?? undefined,
+      password:    payload.password ?? undefined,
+    });
+    return mapLink(data.data as Record<string, unknown>);
+  },
+
+  /**
+   * Authenticated create — used inside the dashboard.
+   */
+  async createAuthenticated(payload: CreateLinkPayload): Promise<ShortLink> {
     const { data } = await apiClient.post("/links", {
       originalUrl: payload.originalUrl,
       customAlias: payload.customAlias ?? undefined,

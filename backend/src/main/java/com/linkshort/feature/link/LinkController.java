@@ -16,6 +16,18 @@ public class LinkController {
 
     private final LinkService linkService;
 
+    /**
+     * Public endpoint — no authentication required.
+     * Used by the homepage shortener form for anonymous users.
+     * Links are saved under the system anonymous user account.
+     */
+    @PostMapping("/public")
+    @ResponseStatus(HttpStatus.CREATED)
+    public ApiResponse<LinkResponse> createPublic(
+            @Valid @RequestBody CreateLinkRequest req) {
+        return ApiResponse.ok(linkService.createAnonymous(req), "Link created successfully");
+    }
+
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ApiResponse<LinkResponse> create(

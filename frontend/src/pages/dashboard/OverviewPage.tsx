@@ -255,7 +255,7 @@ export function OverviewPage() {
             <p className="text-xs text-muted-foreground">Shorten and manage your links</p>
           </CardHeader>
           <CardContent>
-            <ShortenForm compact />
+            <ShortenForm compact authenticated />
           </CardContent>
         </Card>
       </div>
