@@ -14,7 +14,7 @@ public record AuthResponse(
                     u.getName(),
                     u.getEmail(),
                     u.getRole().name(),
-                    u.getCreatedAt().toString()
+                    u.getCreatedAt() != null ? u.getCreatedAt().toString() : null
             );
         }
     }

@@ -83,7 +83,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ApiResponse<?> handleGeneric(Exception ex) {
-        log.error("Unhandled exception", ex);
+        // Log full stack trace so it appears in Render/production logs
+        log.error("Unhandled exception [{}]: {}", ex.getClass().getSimpleName(), ex.getMessage(), ex);
         return ApiResponse.error("An internal error occurred. Please try again later.");
     }
 }

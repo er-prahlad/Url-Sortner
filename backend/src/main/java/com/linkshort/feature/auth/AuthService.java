@@ -32,7 +32,9 @@ public class AuthService {
                 .email(req.email())
                 .passwordHash(passwordEncoder.encode(req.password()))
                 .build();
-        user = userRepository.save(user);
+        // saveAndFlush ensures @PrePersist (createdAt/updatedAt) is populated
+        // on the returned entity before we pass it to buildAuthResponse
+        user = userRepository.saveAndFlush(user);
         return buildAuthResponse(user);
     }
 
