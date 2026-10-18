@@ -9,8 +9,9 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
     hikari:
       maximum-pool-size: 3
-      minimum-idle: 1
-      connection-timeout: 30000
+      minimum-idle: 0          # Do NOT pre-create connections at startup
+      initialization-fail-timeout: -1   # Don't fail startup if pool init is slow
+      connection-timeout: 60000         # 60 s — Aiven SSL handshake can be slow
       idle-timeout: 300000
       max-lifetime: 600000
 
@@ -26,6 +27,8 @@ spring:
     enabled: true
     locations: classpath:db/migration
     baseline-on-migrate: true
+    connect-retries: 5               # Retry DB connection up to 5 times
+    connect-retries-interval: 5      # 5 seconds between retries
 
 server:
   port: ${PORT:10000}
