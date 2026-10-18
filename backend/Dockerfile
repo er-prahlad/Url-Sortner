@@ -1,5 +1,5 @@
 # ── Build stage ────────────────────────────────────────────────────────────────
-# cache-bust: postgresql-migration-2026-10
+# cache-bust: mysql-aiven-2026-10
 FROM maven:3.9.6-eclipse-temurin-21 AS build
 WORKDIR /app
 COPY pom.xml .

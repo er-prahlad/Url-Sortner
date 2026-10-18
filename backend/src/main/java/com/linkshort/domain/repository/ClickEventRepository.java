@@ -116,7 +116,7 @@ public interface ClickEventRepository extends JpaRepository<ClickEvent, Long> {
           INNER JOIN links l ON ce.link_id = l.id
           WHERE l.user_id = :userId
           GROUP BY ce.link_id
-        ) sub
+        ) AS sub
         """, nativeQuery = true)
     Long sumTotalClicksByUserId(@Param("userId") Long userId);
 }
