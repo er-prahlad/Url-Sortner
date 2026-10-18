@@ -136,10 +136,10 @@ public class LinkService {
     @Scheduled(fixedDelayString = "${app.link-expiry-check-ms:300000}")
     @Transactional
     public void expireLinks() {
-        int count = linkRepository.expireLinks(LocalDateTime.now());
-        if (count > 0) {
-            // log silently – no log dependency here, Spring will emit startup info
-        }
+        linkRepository.expireLinks(
+                LocalDateTime.now(),
+                LinkStatus.ACTIVE,
+                LinkStatus.EXPIRED);
     }
 
     // ── Helpers ─────────────────────────────────────────────────────────────
