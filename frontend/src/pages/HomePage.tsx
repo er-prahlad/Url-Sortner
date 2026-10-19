@@ -11,21 +11,20 @@ import { useAuth } from "@/hooks/useAuth";
 import { useSEO } from "@/hooks/useSEO";
 
 const FEATURES = [
-  { icon: Zap,   title: "Instant Shortening",   desc: "Generate a branded short link in under a second. No setup, no delays." },
-  { icon: Tag,   title: "Custom Aliases",        desc: "Create memorable links with your own custom alias for better brand recall." },
-  { icon: QrCode,title: "QR Code Generation",   desc: "Download pixel-perfect QR codes in PNG or SVG format for any link." },
-  { icon: BarChart3, title: "Real-Time Analytics", desc: "Track clicks, geolocations, devices, and referrers as they happen." },
-  { icon: Clock, title: "Link Expiration",       desc: "Set automatic expiry dates so links stop working exactly when you need." },
-  { icon: Shield,title: "Secure & Reliable",    desc: "Every link is protected with HTTPS. 99.9% uptime SLA." },
+  { icon: Zap,      title: "Instant Shortening",    desc: "Generate a branded short link in under a second. No setup, no delays." },
+  { icon: Tag,      title: "Custom Aliases",         desc: "Create memorable links with your own custom alias for better brand recall." },
+  { icon: QrCode,   title: "QR Code Generation",    desc: "Download pixel-perfect QR codes in PNG or SVG format for any link." },
+  { icon: BarChart3,title: "Real-Time Analytics",   desc: "Track clicks, geolocations, devices, and referrers as they happen." },
+  { icon: Clock,    title: "Link Expiration",        desc: "Set automatic expiry dates so links stop working exactly when you need." },
+  { icon: Shield,   title: "Secure & Reliable",     desc: "Every link is protected with HTTPS. 99.9% uptime SLA." },
 ];
 
 const HOW_IT_WORKS = [
-  { step: "01", icon: Link2, title: "Paste your long URL", desc: "Copy any long web address and paste it into the input field." },
-  { step: "02", icon: MousePointerClick, title: "Generate your short link", desc: "Click 'Shorten URL' and get a compact, shareable link instantly." },
-  { step: "03", icon: Share2, title: "Share and track", desc: "Share anywhere and monitor every click from your dashboard." },
+  { step: "01", icon: Link2,            title: "Paste your long URL",        desc: "Copy any long web address and paste it into the input field." },
+  { step: "02", icon: MousePointerClick,title: "Generate your short link",   desc: "Click 'Shorten URL' and get a compact, shareable link instantly." },
+  { step: "03", icon: Share2,           title: "Share and track",            desc: "Share anywhere and monitor every click from your dashboard." },
 ];
 
-/** Simple hook to add scroll-triggered animations */
 function useScrollAnimation() {
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -42,7 +41,7 @@ function useScrollAnimation() {
 export function HomePage() {
   useSEO({
     title: "Shorten Links. Share Smarter.",
-    description: "LinkShortner — Free URL shortener with real-time analytics, custom aliases, QR codes, and link management. Create your first short link in seconds.",
+    description: "LinkShortner — Free URL shortener with real-time analytics, custom aliases, QR codes, and link management.",
     keywords: "url shortener, free link shortener, custom short links, qr code, link analytics, linkshortner",
   });
   useScrollAnimation();
@@ -57,18 +56,18 @@ export function HomePage() {
     }
   }, [isAuthenticated, isLoading, navigate]);
 
-  // While checking auth, render nothing to avoid flash
+  // Show nothing while checking auth to avoid flash
   if (isLoading || isAuthenticated) return null;
 
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
 
-      {/* ── Hero ──────────────────────────────────────────────────────────── */}
+      {/* ── Hero ────────────────────────────────────────────────────────── */}
       <section className="relative overflow-hidden bg-gradient-to-b from-amber-50/70 to-background dark:from-black dark:to-background py-20 md:py-28">
         <div className="absolute inset-0 -z-10 overflow-hidden">
-          <div className="absolute -top-40 -right-32 h-96 w-96 rounded-full bg-primary/8 blur-3xl" />
-          <div className="absolute -bottom-20 -left-20 h-72 w-72 rounded-full bg-primary/8 blur-3xl" />
+          <div className="absolute -top-40 -right-32 h-96 w-96 rounded-full bg-primary/5 blur-3xl" />
+          <div className="absolute -bottom-20 -left-20 h-72 w-72 rounded-full bg-primary/5 blur-3xl" />
         </div>
 
         <div className="container">
@@ -87,30 +86,29 @@ export function HomePage() {
             </p>
           </div>
 
-          {/* Shortener card */}
-          <div className="mx-auto max-w-2xl w-full px-2 sm:px-0 animate-fade-in">
-            <div className="rounded-2xl border bg-background shadow-lg p-4 sm:p-6 md:p-8 overflow-hidden">
-              {/* Always show signup prompt for non-authenticated visitors */}
-              <div className="text-center py-2 space-y-4">
-                <div>
-                  <h3 className="font-semibold text-lg mb-1">Start shortening links for free</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Create an account in seconds — no credit card required.
-                  </p>
-                </div>
-                <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                  <Button asChild size="lg" className="font-semibold">
-                    <Link to="/signup">Get started free</Link>
-                  </Button>
-                  <Button asChild size="lg" variant="outline">
-                    <Link to="/login">Sign in</Link>
-                  </Button>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Already have an account?{" "}
-                  <Link to="/login" className="text-primary hover:underline">Sign in to your dashboard →</Link>
+          {/* CTA card */}
+          <div className="mx-auto max-w-xl w-full px-2 sm:px-0 animate-fade-in">
+            <div className="rounded-2xl border bg-background shadow-lg p-6 sm:p-8 text-center space-y-5">
+              <div>
+                <h3 className="font-semibold text-xl mb-2">Start shortening links for free</h3>
+                <p className="text-sm text-muted-foreground">
+                  Create an account in seconds — no credit card required.
                 </p>
               </div>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <Button asChild size="lg" className="font-semibold w-full sm:w-auto">
+                  <Link to="/signup">Get started free</Link>
+                </Button>
+                <Button asChild size="lg" variant="outline" className="w-full sm:w-auto">
+                  <Link to="/login">Sign in</Link>
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Already have an account?{" "}
+                <Link to="/login" className="text-primary hover:underline">
+                  Sign in to your dashboard →
+                </Link>
+              </p>
             </div>
           </div>
         </div>
