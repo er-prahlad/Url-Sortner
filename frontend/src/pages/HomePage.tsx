@@ -1,17 +1,13 @@
-import { useState, useEffect, useRef } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import {
+import { useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";import {
   Zap, Tag, QrCode, BarChart3, Clock, Shield,
-  ArrowRight, Link2, Share2, MousePointerClick, Lock,
+  ArrowRight, Link2, Share2, MousePointerClick,
 } from "lucide-react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
-import { ShortenForm } from "@/components/links/ShortenForm";
-import { LinkResultCard } from "@/components/links/LinkResultCard";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useSEO } from "@/hooks/useSEO";
-import type { ShortLink } from "@/types";
 
 const FEATURES = [
   { icon: Zap,   title: "Instant Shortening",   desc: "Generate a branded short link in under a second. No setup, no delays." },
@@ -50,9 +46,18 @@ export function HomePage() {
   });
   useScrollAnimation();
 
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
-  const [results, setResults] = useState<ShortLink[]>([]);
+
+  // Redirect logged-in users straight to their dashboard
+  useEffect(() => {
+    if (!isLoading && isAuthenticated) {
+      navigate("/dashboard", { replace: true });
+    }
+  }, [isAuthenticated, isLoading, navigate]);
+
+  // While checking auth, render nothing to avoid flash
+  if (isLoading || isAuthenticated) return null;
 
   const handleSuccess = (link: ShortLink) => setResults((p) => [link, ...p]);
   const handleDismiss = (id: string) => setResults((p) => p.filter((l) => l.id !== id));
@@ -87,51 +92,27 @@ export function HomePage() {
           {/* Shortener card */}
           <div className="mx-auto max-w-2xl w-full px-2 sm:px-0 animate-fade-in">
             <div className="rounded-2xl border bg-background shadow-lg p-4 sm:p-6 md:p-8 overflow-hidden">
-              {isAuthenticated ? (
-                <>
-                  <ShortenForm onSuccess={handleSuccess} />
-                  {results.length > 0 && (
-                    <div className="mt-6 space-y-3">
-                      <div className="flex items-center justify-between">
-                        <p className="text-sm font-medium text-muted-foreground">
-                          {results.length} link{results.length > 1 ? "s" : ""} created
-                        </p>
-                        <button
-                          onClick={() => setResults([])}
-                          className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-                        >
-                          Clear all
-                        </button>
-                      </div>
-                      {results.map((link) => (
-                        <LinkResultCard key={link.id} link={link} onDismiss={handleDismiss} />
-                      ))}
-                    </div>
-                  )}
-                </>
-              ) : (
-                /* ── Login required prompt ── */
-                <div className="text-center py-4 space-y-4">
-                  <div className="h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto">
-                    <Lock className="h-6 w-6 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-lg mb-1">Sign in to shorten links</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Create a free account to start shortening links and tracking analytics.
-                    </p>
-                  </div>
-                  <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                    <Button asChild size="lg" className="font-semibold">
-                      <Link to="/signup">Get started free</Link>
-                    </Button>
-                    <Button asChild size="lg" variant="outline">
-                      <Link to="/login">Sign in</Link>
-                    </Button>
-                  </div>
-                  <p className="text-xs text-muted-foreground">No credit card required.</p>
+              {/* Always show signup prompt for non-authenticated visitors */}
+              <div className="text-center py-2 space-y-4">
+                <div>
+                  <h3 className="font-semibold text-lg mb-1">Start shortening links for free</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Create an account in seconds — no credit card required.
+                  </p>
                 </div>
-              )}
+                <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                  <Button asChild size="lg" className="font-semibold">
+                    <Link to="/signup">Get started free</Link>
+                  </Button>
+                  <Button asChild size="lg" variant="outline">
+                    <Link to="/login">Sign in</Link>
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Already have an account?{" "}
+                  <Link to="/login" className="text-primary hover:underline">Sign in to your dashboard →</Link>
+                </p>
+              </div>
             </div>
           </div>
         </div>

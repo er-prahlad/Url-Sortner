@@ -19,6 +19,7 @@ interface ShortenFormProps {
 export function ShortenForm({ onSuccess, compact, authenticated = false }: ShortenFormProps) {
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isDone, setIsDone] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
 
   const {
@@ -37,8 +38,17 @@ export function ShortenForm({ onSuccess, compact, authenticated = false }: Short
       const link = await (authenticated
         ? linksService.createAuthenticated(data)
         : linksService.create(data));
-      onSuccess?.(link);
       reset();
+      setIsDone(true);
+      // Show "Done!" state briefly, then reveal the result card
+      if (onSuccess) {
+        setTimeout(() => {
+          setIsDone(false);
+          onSuccess(link);
+        }, 700);
+      } else {
+        setTimeout(() => setIsDone(false), 1500);
+      }
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Failed to shorten URL. Please try again.";
       const isNetworkErr =
@@ -76,9 +86,10 @@ export function ShortenForm({ onSuccess, compact, authenticated = false }: Short
           type="submit"
           size="lg"
           loading={isLoading}
+          disabled={isLoading || isDone}
           className="h-12 w-full sm:w-auto sm:px-6 shrink-0 font-semibold"
         >
-          {isLoading ? "Shortening…" : "Shorten URL"}
+          {isLoading ? "Shortening…" : isDone ? "✓ Done!" : "Shorten URL"}
         </Button>
       </div>
 
