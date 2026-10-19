@@ -1,104 +1,78 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import {
-  Zap,
-  Tag,
-  QrCode,
-  BarChart3,
-  Clock,
-  Shield,
-  ArrowRight,
-  Link2,
-  Share2,
-  MousePointerClick,
+  Zap, Tag, QrCode, BarChart3, Clock, Shield,
+  ArrowRight, Link2, Share2, MousePointerClick, Lock,
 } from "lucide-react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { ShortenForm } from "@/components/links/ShortenForm";
 import { LinkResultCard } from "@/components/links/LinkResultCard";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth";
+import { useSEO } from "@/hooks/useSEO";
 import type { ShortLink } from "@/types";
 
 const FEATURES = [
-  {
-    icon: Zap,
-    title: "Fast URL Shortening",
-    desc: "Generate a short link instantly. No waiting, no delays.",
-  },
-  {
-    icon: Tag,
-    title: "Custom Aliases",
-    desc: "Create branded links with your own custom alias for better recall.",
-  },
-  {
-    icon: QrCode,
-    title: "QR Code Generation",
-    desc: "Download QR codes in PNG or SVG format for any of your links.",
-  },
-  {
-    icon: BarChart3,
-    title: "Click Analytics",
-    desc: "Track clicks, locations, devices, and referrers in real time.",
-  },
-  {
-    icon: Clock,
-    title: "Link Expiration",
-    desc: "Set expiry dates on links to control how long they stay active.",
-  },
-  {
-    icon: Shield,
-    title: "Secure Management",
-    desc: "Manage and organise all your links from a single protected dashboard.",
-  },
+  { icon: Zap,   title: "Instant Shortening",   desc: "Generate a branded short link in under a second. No setup, no delays." },
+  { icon: Tag,   title: "Custom Aliases",        desc: "Create memorable links with your own custom alias for better brand recall." },
+  { icon: QrCode,title: "QR Code Generation",   desc: "Download pixel-perfect QR codes in PNG or SVG format for any link." },
+  { icon: BarChart3, title: "Real-Time Analytics", desc: "Track clicks, geolocations, devices, and referrers as they happen." },
+  { icon: Clock, title: "Link Expiration",       desc: "Set automatic expiry dates so links stop working exactly when you need." },
+  { icon: Shield,title: "Secure & Reliable",    desc: "Every link is protected with HTTPS. 99.9% uptime SLA." },
 ];
 
 const HOW_IT_WORKS = [
-  {
-    step: "01",
-    icon: Link2,
-    title: "Paste your long URL",
-    desc: "Copy any long web address and paste it into the input field above.",
-  },
-  {
-    step: "02",
-    icon: MousePointerClick,
-    title: "Generate your short link",
-    desc: "Click 'Shorten URL' and get a compact, shareable link in seconds.",
-  },
-  {
-    step: "03",
-    icon: Share2,
-    title: "Share and track your link",
-    desc: "Share your short link anywhere and monitor performance from your dashboard.",
-  },
+  { step: "01", icon: Link2, title: "Paste your long URL", desc: "Copy any long web address and paste it into the input field." },
+  { step: "02", icon: MousePointerClick, title: "Generate your short link", desc: "Click 'Shorten URL' and get a compact, shareable link instantly." },
+  { step: "03", icon: Share2, title: "Share and track", desc: "Share anywhere and monitor every click from your dashboard." },
 ];
 
+/** Simple hook to add scroll-triggered animations */
+function useScrollAnimation() {
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => entries.forEach((e) => {
+        if (e.isIntersecting) e.target.classList.add("visible");
+      }),
+      { threshold: 0.15 }
+    );
+    document.querySelectorAll(".animate-on-scroll").forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
+  }, []);
+}
+
 export function HomePage() {
+  useSEO({
+    title: "Shorten Links. Share Smarter.",
+    description: "LinkShortner — Free URL shortener with real-time analytics, custom aliases, QR codes, and link management. Create your first short link in seconds.",
+    keywords: "url shortener, free link shortener, custom short links, qr code, link analytics, linkshortner",
+  });
+  useScrollAnimation();
+
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
   const [results, setResults] = useState<ShortLink[]>([]);
 
-  const handleSuccess = (link: ShortLink) => {
-    setResults((prev) => [link, ...prev]);
-  };
-
-  const handleDismiss = (id: string) => {
-    setResults((prev) => prev.filter((l) => l.id !== id));
-  };
+  const handleSuccess = (link: ShortLink) => setResults((p) => [link, ...p]);
+  const handleDismiss = (id: string) => setResults((p) => p.filter((l) => l.id !== id));
 
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
 
-      {/* Hero */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-blue-50/60 to-background dark:from-blue-950/20 dark:to-background py-20 md:py-28">
-        {/* Background decoration */}
+      {/* ── Hero ──────────────────────────────────────────────────────────── */}
+      <section className="relative overflow-hidden bg-gradient-to-b from-amber-50/70 to-background dark:from-black dark:to-background py-20 md:py-28">
         <div className="absolute inset-0 -z-10 overflow-hidden">
-          <div className="absolute -top-40 -right-32 h-96 w-96 rounded-full bg-primary/5 blur-3xl" />
-          <div className="absolute -bottom-20 -left-20 h-72 w-72 rounded-full bg-primary/5 blur-3xl" />
+          <div className="absolute -top-40 -right-32 h-96 w-96 rounded-full bg-primary/8 blur-3xl" />
+          <div className="absolute -bottom-20 -left-20 h-72 w-72 rounded-full bg-primary/8 blur-3xl" />
         </div>
 
         <div className="container">
-          <div className="mx-auto max-w-3xl text-center mb-10">
+          <div className="mx-auto max-w-3xl text-center mb-10 animate-fade-in">
             <div className="inline-flex items-center gap-2 rounded-full border bg-background px-4 py-1.5 text-sm text-muted-foreground mb-6 shadow-sm">
               <Zap className="h-3.5 w-3.5 text-primary" />
-              Fast, free, and simple URL shortener
+              Fast, free, and powerful URL shortener
             </div>
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-foreground mb-5">
               Shorten Links.{" "}
@@ -106,31 +80,56 @@ export function HomePage() {
             </h1>
             <p className="text-lg text-muted-foreground max-w-xl mx-auto">
               Create short, memorable links and track their performance in one place.
+              Trusted by marketers, developers, and creators worldwide.
             </p>
           </div>
 
           {/* Shortener card */}
-          <div className="mx-auto max-w-2xl">
-            <div className="rounded-2xl border bg-background shadow-lg p-6 sm:p-8">
-              <ShortenForm onSuccess={handleSuccess} />
-
-              {/* Results */}
-              {results.length > 0 && (
-                <div className="mt-6 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm font-medium text-muted-foreground">
-                      {results.length} link{results.length > 1 ? "s" : ""} created
-                    </p>
-                    <button
-                      onClick={() => setResults([])}
-                      className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                      Clear all
-                    </button>
+          <div className="mx-auto max-w-2xl w-full px-2 sm:px-0 animate-fade-in">
+            <div className="rounded-2xl border bg-background shadow-lg p-4 sm:p-6 md:p-8 overflow-hidden">
+              {isAuthenticated ? (
+                <>
+                  <ShortenForm onSuccess={handleSuccess} />
+                  {results.length > 0 && (
+                    <div className="mt-6 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm font-medium text-muted-foreground">
+                          {results.length} link{results.length > 1 ? "s" : ""} created
+                        </p>
+                        <button
+                          onClick={() => setResults([])}
+                          className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                        >
+                          Clear all
+                        </button>
+                      </div>
+                      {results.map((link) => (
+                        <LinkResultCard key={link.id} link={link} onDismiss={handleDismiss} />
+                      ))}
+                    </div>
+                  )}
+                </>
+              ) : (
+                /* ── Login required prompt ── */
+                <div className="text-center py-4 space-y-4">
+                  <div className="h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto">
+                    <Lock className="h-6 w-6 text-primary" />
                   </div>
-                  {results.map((link) => (
-                    <LinkResultCard key={link.id} link={link} onDismiss={handleDismiss} />
-                  ))}
+                  <div>
+                    <h3 className="font-semibold text-lg mb-1">Sign in to shorten links</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Create a free account to start shortening links and tracking analytics.
+                    </p>
+                  </div>
+                  <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                    <Button asChild size="lg" className="font-semibold">
+                      <Link to="/signup">Get started free</Link>
+                    </Button>
+                    <Button asChild size="lg" variant="outline">
+                      <Link to="/login">Sign in</Link>
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground">No credit card required.</p>
                 </div>
               )}
             </div>
@@ -138,18 +137,21 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* How it works */}
+      {/* ── How it works ──────────────────────────────────────────────────── */}
       <section className="py-20 bg-background">
         <div className="container">
-          <div className="text-center mb-12">
+          <div className="text-center mb-12 animate-on-scroll">
             <h2 className="text-3xl font-bold tracking-tight mb-3">How It Works</h2>
             <p className="text-muted-foreground">Get your short link in 3 simple steps.</p>
           </div>
           <div className="grid sm:grid-cols-3 gap-8 max-w-4xl mx-auto">
-            {HOW_IT_WORKS.map(({ step, icon: Icon, title, desc }) => (
-              <div key={step} className="flex flex-col items-center text-center group">
+            {HOW_IT_WORKS.map(({ step, icon: Icon, title, desc }, i) => (
+              <div
+                key={step}
+                className={`flex flex-col items-center text-center group animate-on-scroll animate-on-scroll-delay-${i + 1}`}
+              >
                 <div className="relative mb-5">
-                  <div className="h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/15 transition-colors">
+                  <div className="h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
                     <Icon className="h-7 w-7 text-primary" />
                   </div>
                   <span className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center">
@@ -164,22 +166,22 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* Features */}
-      <section id="features" className="py-20 bg-muted/30">
+      {/* ── Features ──────────────────────────────────────────────────────── */}
+      <section id="features" className="py-20 bg-muted/30 dark:bg-black/40">
         <div className="container">
-          <div className="text-center mb-12">
+          <div className="text-center mb-12 animate-on-scroll">
             <h2 className="text-3xl font-bold tracking-tight mb-3">Powerful Features</h2>
             <p className="text-muted-foreground max-w-md mx-auto">
-              Everything you need to create, manage and track your short links.
+              Everything you need to create, manage, and track your short links.
             </p>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
-            {FEATURES.map(({ icon: Icon, title, desc }) => (
+            {FEATURES.map(({ icon: Icon, title, desc }, i) => (
               <div
                 key={title}
-                className="group rounded-xl border bg-background p-6 hover:shadow-md transition-all hover:-translate-y-0.5"
+                className={`group rounded-xl border bg-background p-6 hover:shadow-md hover:border-primary/40 transition-all hover:-translate-y-0.5 animate-on-scroll animate-on-scroll-delay-${(i % 3) + 1}`}
               >
-                <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/15 transition-colors">
+                <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
                   <Icon className="h-5 w-5 text-primary" />
                 </div>
                 <h3 className="font-semibold mb-1.5">{title}</h3>
@@ -190,27 +192,27 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="py-20 bg-primary text-primary-foreground">
+      {/* ── CTA ───────────────────────────────────────────────────────────── */}
+      <section className="py-20 bg-primary text-primary-foreground animate-on-scroll">
         <div className="container text-center">
-          <h2 className="text-3xl font-bold mb-4">Ready to get started?</h2>
+          <h2 className="text-3xl font-bold mb-4">Ready to shorten smarter?</h2>
           <p className="text-primary-foreground/80 mb-8 max-w-md mx-auto">
-            Create your free account and start shortening links today.
+            Join thousands of creators and marketers who trust LinkShortner every day.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <a
-              href="/signup"
+            <Link
+              to="/signup"
               className="inline-flex items-center justify-center gap-2 rounded-md bg-white text-primary px-6 py-3 font-semibold hover:bg-white/90 transition-colors"
             >
-              Get started free
+              Start for free
               <ArrowRight className="h-4 w-4" />
-            </a>
-            <a
-              href="#features"
+            </Link>
+            <Link
+              to="/pricing"
               className="inline-flex items-center justify-center gap-2 rounded-md border border-primary-foreground/30 px-6 py-3 font-semibold hover:bg-primary-foreground/10 transition-colors"
             >
-              Learn more
-            </a>
+              See pricing
+            </Link>
           </div>
         </div>
       </section>

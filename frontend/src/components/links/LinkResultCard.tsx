@@ -1,12 +1,6 @@
 import { useState } from "react";
 import {
-  Copy,
-  Check,
-  ExternalLink,
-  QrCode,
-  Share2,
-  Calendar,
-  X,
+  Copy, Check, ExternalLink, QrCode, Share2, Calendar, X,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -27,7 +21,7 @@ export function LinkResultCard({ link, onDismiss }: LinkResultCardProps) {
 
   const handleShare = async () => {
     if (navigator.share) {
-      await navigator.share({ url: link.shortUrl, title: "LinkShort" });
+      await navigator.share({ url: link.shortUrl, title: "LinkShortner" });
     } else {
       copy(link.shortUrl);
     }
@@ -35,16 +29,18 @@ export function LinkResultCard({ link, onDismiss }: LinkResultCardProps) {
 
   return (
     <>
-      <Card className="w-full animate-fade-in">
-        <CardContent className="p-4 sm:p-6">
-          <div className="flex items-start justify-between gap-3 mb-4">
-            <Badge variant="success" className="shrink-0">
-              Link created
+      {/* w-full + overflow-hidden prevents the card itself from widening */}
+      <Card className="w-full overflow-hidden animate-fade-in">
+        <CardContent className="p-4">
+          {/* Header row */}
+          <div className="flex items-center justify-between gap-2 mb-3">
+            <Badge variant="success" className="shrink-0 text-xs">
+              ✓ Link created
             </Badge>
             {onDismiss && (
               <button
                 onClick={() => onDismiss(link.id)}
-                className="text-muted-foreground hover:text-foreground transition-colors"
+                className="text-muted-foreground hover:text-foreground transition-colors p-0.5 rounded"
                 aria-label="Dismiss"
               >
                 <X className="h-4 w-4" />
@@ -52,79 +48,80 @@ export function LinkResultCard({ link, onDismiss }: LinkResultCardProps) {
             )}
           </div>
 
-          <div className="grid gap-3">
-            {/* Original URL */}
-            <div>
-              <p className="text-xs font-medium text-muted-foreground mb-1">Original URL</p>
-              <p className="text-sm text-foreground url-truncate" title={link.originalUrl}>
-                {truncateUrl(link.originalUrl, 80)}
+          <div className="space-y-3">
+            {/* Original URL — overflow hidden, never wraps */}
+            <div className="min-w-0">
+              <p className="text-xs font-medium text-muted-foreground mb-0.5">Original URL</p>
+              <p
+                className="text-sm text-foreground truncate"
+                title={link.originalUrl}
+              >
+                {link.originalUrl}
               </p>
             </div>
 
-            {/* Short URL */}
-            <div>
+            {/* Short URL — stacked on mobile, row on sm+ */}
+            <div className="min-w-0">
               <p className="text-xs font-medium text-muted-foreground mb-1">Short URL</p>
-              <div className="flex items-center gap-2">
-                <div className="flex-1 flex items-center gap-2 rounded-md border bg-muted/50 px-3 py-2 min-w-0">
+              {/* Stack vertically on xs, side-by-side on sm */}
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                {/* URL display box — min-w-0 prevents flex child from expanding */}
+                <div className="min-w-0 flex-1 rounded-md border bg-muted/50 px-3 py-2">
                   <a
                     href={link.shortUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-sm font-medium text-primary hover:underline url-truncate"
+                    className="text-sm font-semibold text-primary hover:underline block truncate"
+                    title={link.shortUrl}
                   >
                     {link.shortUrl}
                   </a>
                 </div>
+                {/* Copy button — full width on xs, auto on sm */}
                 <Button
                   size="sm"
                   variant={copied ? "secondary" : "default"}
                   onClick={() => copy(link.shortUrl)}
-                  className="shrink-0"
+                  className="w-full sm:w-auto shrink-0 h-9"
                 >
                   {copied ? (
-                    <>
-                      <Check className="h-4 w-4" />
-                      Copied!
-                    </>
+                    <><Check className="h-4 w-4 mr-1.5" />Copied!</>
                   ) : (
-                    <>
-                      <Copy className="h-4 w-4" />
-                      Copy
-                    </>
+                    <><Copy className="h-4 w-4 mr-1.5" />Copy</>
                   )}
                 </Button>
               </div>
             </div>
 
-            {/* Dates */}
-            <div className="flex flex-wrap gap-4 text-xs text-muted-foreground">
+            {/* Date */}
+            <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
               <span className="flex items-center gap-1">
-                <Calendar className="h-3.5 w-3.5" />
+                <Calendar className="h-3.5 w-3.5 shrink-0" />
                 Created {formatDate(link.createdAt)}
               </span>
               {link.expiresAt && (
                 <span className="flex items-center gap-1">
-                  <Calendar className="h-3.5 w-3.5" />
+                  <Calendar className="h-3.5 w-3.5 shrink-0" />
                   Expires {formatDate(link.expiresAt)}
                 </span>
               )}
             </div>
 
-            {/* Actions */}
-            <div className="flex flex-wrap gap-2 pt-1">
-              <Button size="sm" variant="outline" asChild>
+            {/* Action buttons — wrap safely, each button is equal width on mobile */}
+            <div className="grid grid-cols-3 gap-2 pt-0.5 sm:flex sm:flex-wrap">
+              <Button size="sm" variant="outline" className="w-full sm:w-auto" asChild>
                 <a href={link.shortUrl} target="_blank" rel="noopener noreferrer">
-                  <ExternalLink className="h-4 w-4" />
-                  Open
+                  <ExternalLink className="h-4 w-4 sm:mr-1.5" />
+                  <span className="hidden sm:inline">Open</span>
                 </a>
               </Button>
-              <Button size="sm" variant="outline" onClick={() => setQrOpen(true)}>
-                <QrCode className="h-4 w-4" />
-                QR Code
+              <Button size="sm" variant="outline" className="w-full sm:w-auto" onClick={() => setQrOpen(true)}>
+                <QrCode className="h-4 w-4 sm:mr-1.5" />
+                <span className="hidden sm:inline">QR Code</span>
               </Button>
-              <Button size="sm" variant="outline" onClick={handleShare}>
-                <Share2 className="h-4 w-4" />
-                Share
+              <Button size="sm" variant="outline" className="w-full sm:w-auto" onClick={handleShare}>
+                <Share2 className="h-4 w-4 sm:mr-1.5" />
+                <span className="hidden sm:inline">Share</span>
               </Button>
             </div>
           </div>

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Link2, ChevronDown, ChevronUp, Loader2 } from "lucide-react";
+import { Link2, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
 interface ShortenFormProps {
   onSuccess?: (link: ShortLink) => void;
   compact?: boolean;
-  authenticated?: boolean;  // true = use /links (JWT), false = use /links/public
+  authenticated?: boolean;
 }
 
 export function ShortenForm({ onSuccess, compact, authenticated = false }: ShortenFormProps) {
@@ -41,13 +41,13 @@ export function ShortenForm({ onSuccess, compact, authenticated = false }: Short
       reset();
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Failed to shorten URL. Please try again.";
-      // Surface backend-not-running errors clearly
-      const isNetworkErr = msg.toLowerCase().includes("cannot connect") ||
-                           msg.toLowerCase().includes("network") ||
-                           msg.toLowerCase().includes("server");
+      const isNetworkErr =
+        msg.toLowerCase().includes("cannot connect") ||
+        msg.toLowerCase().includes("network") ||
+        msg.toLowerCase().includes("server");
       setApiError(
         isNetworkErr
-          ? "Backend server is not reachable. Start your Spring Boot server on port 8080 and try again."
+          ? "Cannot reach the server. Make sure the backend is running."
           : msg
       );
     } finally {
@@ -55,16 +55,19 @@ export function ShortenForm({ onSuccess, compact, authenticated = false }: Short
     }
   };
 
+  const shortDomain = import.meta.env.VITE_SHORT_DOMAIN ?? "lnks.to";
+
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="w-full space-y-3">
-      {/* Main input row */}
-      <div className={cn("flex gap-2", compact ? "flex-col sm:flex-row" : "flex-col sm:flex-row")}>
-        <div className="flex-1 relative">
+
+      {/* ── URL input + button — stack on all mobile, row on sm+ ── */}
+      <div className="flex flex-col gap-2 sm:flex-row">
+        <div className="relative flex-1 min-w-0">
           <Link2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
           <Input
             {...register("originalUrl")}
-            placeholder="https://your-long-url.com/paste-it-here"
-            className="pl-9 h-12 text-sm"
+            placeholder="https://your-long-url.com/paste-here"
+            className="pl-9 h-12 text-sm w-full"
             aria-label="Long URL"
             disabled={isLoading}
           />
@@ -73,7 +76,7 @@ export function ShortenForm({ onSuccess, compact, authenticated = false }: Short
           type="submit"
           size="lg"
           loading={isLoading}
-          className="h-12 px-6 shrink-0 font-semibold"
+          className="h-12 w-full sm:w-auto sm:px-6 shrink-0 font-semibold"
         >
           {isLoading ? "Shortening…" : "Shorten URL"}
         </Button>
@@ -83,7 +86,7 @@ export function ShortenForm({ onSuccess, compact, authenticated = false }: Short
         <p className="text-sm text-destructive">{errors.originalUrl.message}</p>
       )}
 
-      {/* Advanced toggle */}
+      {/* ── Advanced toggle ── */}
       <button
         type="button"
         onClick={() => setShowAdvanced((p) => !p)}
@@ -94,20 +97,22 @@ export function ShortenForm({ onSuccess, compact, authenticated = false }: Short
       </button>
 
       {showAdvanced && (
-        <div className="grid sm:grid-cols-2 gap-3 pt-1 animate-fade-in">
+        <div className="grid grid-cols-1 gap-3 pt-1 sm:grid-cols-2 animate-fade-in">
+          {/* Custom alias */}
           <div className="space-y-1.5">
             <Label htmlFor="customAlias" className="text-xs">
               Custom alias <span className="text-muted-foreground">(optional)</span>
             </Label>
-            <div className="flex items-center rounded-md border overflow-hidden focus-within:ring-2 focus-within:ring-ring">
-              <span className="bg-muted px-3 py-2 text-xs text-muted-foreground border-r whitespace-nowrap">
-                {import.meta.env.VITE_SHORT_DOMAIN ?? "lnks.to"}/
+            {/* flex + min-w-0 on both children prevents overflow */}
+            <div className="flex min-w-0 rounded-md border overflow-hidden focus-within:ring-2 focus-within:ring-ring">
+              <span className="bg-muted px-2 py-2 text-xs text-muted-foreground border-r whitespace-nowrap shrink-0 max-w-[120px] truncate">
+                {shortDomain}/
               </span>
               <input
                 id="customAlias"
                 {...register("customAlias")}
                 placeholder="my-link"
-                className="flex-1 px-3 py-2 text-sm bg-background outline-none min-w-0"
+                className="flex-1 min-w-0 px-2 py-2 text-sm bg-background outline-none"
                 disabled={isLoading}
               />
             </div>
@@ -116,6 +121,7 @@ export function ShortenForm({ onSuccess, compact, authenticated = false }: Short
             )}
           </div>
 
+          {/* Expiry date */}
           <div className="space-y-1.5">
             <Label htmlFor="expiresAt" className="text-xs">
               Expiry date <span className="text-muted-foreground">(optional)</span>
@@ -124,23 +130,18 @@ export function ShortenForm({ onSuccess, compact, authenticated = false }: Short
               id="expiresAt"
               type="datetime-local"
               {...register("expiresAt")}
-              className="text-sm"
+              className="text-sm w-full"
               disabled={isLoading}
             />
           </div>
         </div>
       )}
 
+      {/* ── Error box — never overflows, text wraps inside ── */}
       {apiError && (
-        <div className="rounded-md bg-destructive/10 border border-destructive/20 px-4 py-3 text-sm text-destructive">
+        <div className="rounded-md bg-destructive/10 border border-destructive/20 px-3 py-2.5 text-sm text-destructive overflow-hidden">
           <p className="font-medium">Error</p>
-          <p className="mt-0.5">{apiError}</p>
-          {(apiError.includes("not reachable") || apiError.includes("connect")) && (
-            <p className="mt-2 text-xs opacity-80">
-              Make sure your backend is running:{" "}
-              <code className="bg-destructive/10 px-1 rounded">cd backend &amp;&amp; mvn spring-boot:run</code>
-            </p>
-          )}
+          <p className="mt-0.5 break-words">{apiError}</p>
         </div>
       )}
 

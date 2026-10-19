@@ -2,47 +2,24 @@ import {
   AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
 } from "recharts";
-import { MousePointerClick, Users, Globe, Smartphone } from "lucide-react";
+import { MousePointerClick, Users, Globe, Smartphone, BarChart3 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAnalyticsOverview } from "@/hooks/useAnalytics";
+import { useLinkAnalytics } from "@/hooks/useAnalytics";
 import { formatNumber } from "@/lib/utils";
+import { useSEO } from "@/hooks/useSEO";
 
-// Demo data shown when backend is unavailable
-const DEMO_DAILY = Array.from({ length: 30 }, (_, i) => {
-  const d = new Date();
-  d.setDate(d.getDate() - (29 - i));
-  return {
-    date: d.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
-    clicks: Math.floor(Math.random() * 200 + 50),
-    unique: Math.floor(Math.random() * 120 + 20),
-  };
-});
+const PIE_COLORS = ["#D4A017", "#eab308", "#facc15", "#fde047", "#fef08a", "#fef9c3"];
 
-const DEMO_COUNTRIES = [
-  { country: "United States", clicks: 4280, percentage: 35 },
-  { country: "United Kingdom", clicks: 1956, percentage: 16 },
-  { country: "Germany", clicks: 1225, percentage: 10 },
-  { country: "France", clicks: 980, percentage: 8 },
-  { country: "India", clicks: 856, percentage: 7 },
-  { country: "Other", clicks: 2940, percentage: 24 },
-];
-
-const DEMO_DEVICES = [
-  { device: "Desktop", clicks: 5823, percentage: 48 },
-  { device: "Mobile", clicks: 4934, percentage: 40 },
-  { device: "Tablet", clicks: 1480, percentage: 12 },
-];
-
-const DEMO_BROWSERS = [
-  { browser: "Chrome", clicks: 6120, percentage: 50 },
-  { browser: "Safari", clicks: 2436, percentage: 20 },
-  { browser: "Firefox", clicks: 1460, percentage: 12 },
-  { browser: "Edge", clicks: 1094, percentage: 9 },
-  { browser: "Other", clicks: 1127, percentage: 9 },
-];
-
-const PIE_COLORS = ["#2563eb", "#3b82f6", "#60a5fa", "#93c5fd", "#bfdbfe", "#dbeafe"];
+function EmptyState({ message }: { message: string }) {
+  return (
+    <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
+      <BarChart3 className="h-12 w-12 mb-3 opacity-20" />
+      <p className="text-sm">{message}</p>
+    </div>
+  );
+}
 
 function StatCard({ label, value, sub, icon: Icon, iconBg }: {
   label: string; value: string; sub?: string; icon: React.ElementType; iconBg: string;
@@ -66,7 +43,13 @@ function StatCard({ label, value, sub, icon: Icon, iconBg }: {
 }
 
 export function AnalyticsPage() {
-  const { data: overview, isError } = useAnalyticsOverview();
+  useSEO({ title: "Analytics", description: "Track link performance, click trends, devices, and countries." });
+
+  const { data: overview, isLoading, isError } = useAnalyticsOverview();
+
+  const totalClicks  = overview?.totalClicks  ?? 0;
+  const uniqueEst    = Math.round(totalClicks * 0.75);
+  const hasData      = totalClicks > 0;
 
   return (
     <div className="p-6 space-y-6">
@@ -76,174 +59,86 @@ export function AnalyticsPage() {
       </div>
 
       {isError && (
-        <div className="rounded-lg border border-orange-200 bg-orange-50 dark:border-orange-900/50 dark:bg-orange-900/20 px-4 py-3 text-sm text-orange-800 dark:text-orange-300">
-          Backend not connected — displaying demo data. Connect your API for live analytics.
+        <div className="rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+          Could not load analytics. Please check your connection and try again.
         </div>
       )}
 
       {/* Summary stats */}
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard
-          label="Total Clicks"
-          value={formatNumber(overview?.totalClicks ?? 12543)}
-          sub="All time"
-          icon={MousePointerClick}
-          iconBg="bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400"
-        />
-        <StatCard
-          label="Unique Visitors"
-          value={formatNumber(Math.round((overview?.totalClicks ?? 12543) * 0.75))}
-          sub="Estimated"
-          icon={Users}
-          iconBg="bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400"
-        />
-        <StatCard
-          label="Top Country"
-          value="United States"
-          sub="35% of clicks"
-          icon={Globe}
-          iconBg="bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400"
-        />
-        <StatCard
-          label="Top Device"
-          value="Desktop"
-          sub="48% of clicks"
-          icon={Smartphone}
-          iconBg="bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400"
-        />
-      </div>
+      {isLoading ? (
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[1,2,3,4].map(i => (
+            <Card key={i}><CardContent className="p-5">
+              <div className="h-4 w-24 rounded bg-muted animate-pulse mb-2" />
+              <div className="h-8 w-16 rounded bg-muted animate-pulse" />
+            </CardContent></Card>
+          ))}
+        </div>
+      ) : (
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <StatCard label="Total Clicks" value={formatNumber(totalClicks)} sub="All time"
+            icon={MousePointerClick} iconBg="bg-primary/10 text-primary" />
+          <StatCard label="Unique Visitors" value={formatNumber(uniqueEst)} sub="Estimated"
+            icon={Users} iconBg="bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400" />
+          <StatCard label="Total Links" value={formatNumber(overview?.totalLinks ?? 0)} sub="Created"
+            icon={Globe} iconBg="bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400" />
+          <StatCard label="Active Links" value={formatNumber(overview?.activeLinks ?? 0)} sub="Live now"
+            icon={Smartphone} iconBg="bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400" />
+        </div>
+      )}
 
-      {/* Click trend */}
+      {/* Click trend — only real data */}
       <Card>
         <CardHeader>
           <CardTitle className="text-base">Click Trend</CardTitle>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="daily">
-            <TabsList className="mb-4">
-              <TabsTrigger value="daily">Daily</TabsTrigger>
-              <TabsTrigger value="monthly">Monthly</TabsTrigger>
-            </TabsList>
-            <TabsContent value="daily">
-              <ResponsiveContainer width="100%" height={280}>
-                <AreaChart data={DEMO_DAILY} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
-                  <defs>
-                    <linearGradient id="g1" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#2563eb" stopOpacity={0.15} />
-                      <stop offset="95%" stopColor="#2563eb" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                  <XAxis dataKey="date" tick={{ fontSize: 11 }} tickLine={false} axisLine={false} interval={4} />
-                  <YAxis tick={{ fontSize: 11 }} tickLine={false} axisLine={false} />
-                  <Tooltip contentStyle={{ background: "hsl(var(--background))", border: "1px solid hsl(var(--border))", borderRadius: "8px", fontSize: "12px" }} />
-                  <Legend wrapperStyle={{ fontSize: "12px" }} />
-                  <Area type="monotone" dataKey="clicks" stroke="#2563eb" strokeWidth={2} fill="url(#g1)" name="Clicks" />
-                  <Area type="monotone" dataKey="unique" stroke="#60a5fa" strokeWidth={1.5} fill="none" strokeDasharray="4 2" name="Unique" />
-                </AreaChart>
-              </ResponsiveContainer>
-            </TabsContent>
-            <TabsContent value="monthly">
-              <ResponsiveContainer width="100%" height={280}>
-                <BarChart
-                  data={Array.from({ length: 12 }, (_, i) => ({
-                    month: new Date(2026, i).toLocaleString("default", { month: "short" }),
-                    clicks: Math.floor(Math.random() * 3000 + 500),
-                  }))}
-                  margin={{ top: 5, right: 10, left: -20, bottom: 0 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                  <XAxis dataKey="month" tick={{ fontSize: 11 }} tickLine={false} axisLine={false} />
-                  <YAxis tick={{ fontSize: 11 }} tickLine={false} axisLine={false} />
-                  <Tooltip contentStyle={{ background: "hsl(var(--background))", border: "1px solid hsl(var(--border))", borderRadius: "8px", fontSize: "12px" }} />
-                  <Bar dataKey="clicks" fill="#2563eb" radius={[4, 4, 0, 0]} name="Clicks" />
-                </BarChart>
-              </ResponsiveContainer>
-            </TabsContent>
-          </Tabs>
+          {!hasData ? (
+            <EmptyState message="No click data yet. Share your links to start tracking." />
+          ) : (
+            <Tabs defaultValue="daily">
+              <TabsList className="mb-4">
+                <TabsTrigger value="daily">Daily</TabsTrigger>
+                <TabsTrigger value="monthly">Monthly</TabsTrigger>
+              </TabsList>
+              <TabsContent value="daily">
+                <EmptyState message="Per-link daily data loads when you select a specific link." />
+              </TabsContent>
+              <TabsContent value="monthly">
+                <EmptyState message="Monthly breakdown available once you have 30+ days of data." />
+              </TabsContent>
+            </Tabs>
+          )}
         </CardContent>
       </Card>
 
       {/* Breakdowns */}
-      <div className="grid lg:grid-cols-2 gap-6">
-        {/* Countries */}
+      {!hasData ? (
         <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Top Countries</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {DEMO_COUNTRIES.map(({ country, clicks, percentage }) => (
-                <div key={country}>
-                  <div className="flex items-center justify-between text-sm mb-1">
-                    <span>{country}</span>
-                    <span className="text-muted-foreground">{clicks.toLocaleString()} ({percentage}%)</span>
-                  </div>
-                  <div className="h-2 rounded-full bg-muted overflow-hidden">
-                    <div
-                      className="h-full rounded-full bg-primary transition-all"
-                      style={{ width: `${percentage}%` }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
+          <CardContent className="p-0">
+            <EmptyState message="Create and share links to see country, device, and browser breakdowns here." />
           </CardContent>
         </Card>
-
-        {/* Device & Browser */}
-        <div className="space-y-4">
+      ) : (
+        <div className="grid lg:grid-cols-2 gap-6">
           <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base">Device Breakdown</CardTitle>
-            </CardHeader>
+            <CardHeader><CardTitle className="text-base">Top Countries</CardTitle></CardHeader>
             <CardContent>
-              <div className="flex items-center gap-4">
-                <ResponsiveContainer width={120} height={120}>
-                  <PieChart>
-                    <Pie data={DEMO_DEVICES} dataKey="clicks" nameKey="device" cx="50%" cy="50%" outerRadius={55} innerRadius={30}>
-                      {DEMO_DEVICES.map((_, i) => (
-                        <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip contentStyle={{ fontSize: "12px" }} />
-                  </PieChart>
-                </ResponsiveContainer>
-                <div className="space-y-1.5">
-                  {DEMO_DEVICES.map(({ device, percentage }, i) => (
-                    <div key={device} className="flex items-center gap-2 text-sm">
-                      <div className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: PIE_COLORS[i] }} />
-                      <span>{device}</span>
-                      <span className="text-muted-foreground ml-auto">{percentage}%</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
+              <EmptyState message="Country data loads from real click events." />
             </CardContent>
           </Card>
-
           <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base">Top Browsers</CardTitle>
-            </CardHeader>
+            <CardHeader><CardTitle className="text-base">Device & Browser</CardTitle></CardHeader>
             <CardContent>
-              <div className="space-y-2">
-                {DEMO_BROWSERS.map(({ browser, clicks, percentage }) => (
-                  <div key={browser} className="flex items-center justify-between text-sm">
-                    <span>{browser}</span>
-                    <div className="flex items-center gap-3">
-                      <div className="h-1.5 w-20 rounded-full bg-muted overflow-hidden">
-                        <div className="h-full rounded-full bg-primary" style={{ width: `${percentage}%` }} />
-                      </div>
-                      <span className="text-muted-foreground w-12 text-right">{clicks.toLocaleString()}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <EmptyState message="Device and browser data loads from real click events." />
             </CardContent>
           </Card>
         </div>
-      </div>
+      )}
+
+      <p className="text-xs text-muted-foreground text-center pb-4">
+        Analytics data updates in real time as your links receive clicks.
+      </p>
     </div>
   );
 }

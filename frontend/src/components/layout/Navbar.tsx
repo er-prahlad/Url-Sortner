@@ -7,9 +7,10 @@ import { useThemeContext } from "@/context/ThemeProvider";
 import { cn } from "@/lib/utils";
 
 const NAV_LINKS = [
-  { label: "Home", to: "/" },
-  { label: "Features", to: "/#features" },
-  { label: "Pricing", to: "/pricing" },
+  { label: "Home",     to: "/" },
+  { label: "Features", to: "/features" },
+  { label: "Pricing",  to: "/pricing" },
+  { label: "Blog",     to: "/blog" },
 ];
 
 export function Navbar() {

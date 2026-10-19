@@ -84,39 +84,36 @@ function LinkActions({ link, onDelete }: { link: ShortLink; onDelete: (id: strin
 function MobileLinkCard({ link, onDelete }: { link: ShortLink; onDelete: (id: string) => void }) {
   const { copied, copy } = useClipboard();
   return (
-    <Card className="hover:shadow-md transition-shadow">
+    <Card className="hover:shadow-md transition-shadow overflow-hidden">
       <CardContent className="p-4">
-        <div className="flex items-start justify-between gap-2 mb-2">
+        {/* Title + badge — min-w-0 on anchor keeps text truncating */}
+        <div className="flex items-start justify-between gap-2 mb-1.5">
           <a
             href={link.originalUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-sm font-medium text-primary hover:underline url-truncate flex-1"
+            className="text-sm font-medium text-primary hover:underline truncate flex-1 min-w-0"
             title={link.originalUrl}
           >
-            {truncateUrl(link.originalUrl, 50)}
+            {truncateUrl(link.originalUrl, 45)}
           </a>
-          <Badge className={getStatusColor(link.status)} variant="outline">
+          <Badge className={`${getStatusColor(link.status)} shrink-0`} variant="outline">
             {link.status}
           </Badge>
         </div>
-        <p className="text-xs text-muted-foreground mb-3">{link.shortUrl}</p>
-        <div className="flex items-center justify-between">
+        {/* Short URL — truncate, never overflow */}
+        <p className="text-xs text-muted-foreground truncate mb-3">{link.shortUrl}</p>
+        {/* Bottom row — wrap on very small screens */}
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-3 text-xs text-muted-foreground">
             <span>{link.clicks} clicks</span>
             <span>{formatDate(link.createdAt)}</span>
           </div>
-          <div className="flex items-center gap-1">
-            <Button size="sm" variant="outline" onClick={() => copy(link.shortUrl)}>
-              {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-              {copied ? "Copied" : "Copy"}
+          <div className="flex items-center gap-1 shrink-0">
+            <Button size="sm" variant="outline" className="h-8 text-xs px-2.5" onClick={() => copy(link.shortUrl)}>
+              {copied ? <><Check className="h-3.5 w-3.5 mr-1" />Copied</> : <><Copy className="h-3.5 w-3.5 mr-1" />Copy</>}
             </Button>
-            <Button
-              size="icon"
-              variant="ghost"
-              className="h-8 w-8 text-destructive"
-              onClick={() => onDelete(link.id)}
-            >
+            <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive" onClick={() => onDelete(link.id)}>
               <Trash2 className="h-3.5 w-3.5" />
             </Button>
           </div>

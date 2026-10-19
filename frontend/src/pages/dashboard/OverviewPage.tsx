@@ -27,17 +27,10 @@ import { useLinks } from "@/hooks/useLinks";
 import { useClipboard } from "@/hooks/useClipboard";
 import { formatNumber, formatDate, getStatusColor, truncateUrl } from "@/lib/utils";
 import { ShortenForm } from "@/components/links/ShortenForm";
+import { useSEO } from "@/hooks/useSEO";
 import type { ShortLink } from "@/types";
 
-// Placeholder chart data shown when API is unavailable
-const DEMO_CHART: { date: string; clicks: number }[] = Array.from({ length: 14 }, (_, i) => {
-  const d = new Date();
-  d.setDate(d.getDate() - (13 - i));
-  return {
-    date: d.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
-    clicks: Math.floor(Math.random() * 120) + 20,
-  };
-});
+// No demo data — show real data only
 
 function StatCard({
   label,
@@ -126,6 +119,7 @@ function RecentLinkRow({ link }: { link: ShortLink }) {
 }
 
 export function OverviewPage() {
+  useSEO({ title: "Dashboard Overview" });
   const { data: overview, isError: overviewError } = useAnalyticsOverview();
   const { data: linksData } = useLinks({ limit: 5, sort: "newest" });
 
@@ -174,8 +168,8 @@ export function OverviewPage() {
 
       {/* Backend unavailable banner */}
       {overviewError && (
-        <div className="rounded-lg border border-orange-200 bg-orange-50 dark:border-orange-900/50 dark:bg-orange-900/20 px-4 py-3 text-sm text-orange-800 dark:text-orange-300">
-          Backend not connected — analytics data is unavailable. Connect your API to see live stats.
+        <div className="rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+          Could not load analytics. Please try again later.
         </div>
       )}
 
@@ -200,50 +194,37 @@ export function OverviewPage() {
       )}
 
       <div className="grid lg:grid-cols-3 gap-6">
-        {/* Chart */}
+        {/* Chart — real data only */}
         <Card className="lg:col-span-2">
           <CardHeader className="pb-2">
             <CardTitle className="text-base font-semibold">Click Activity</CardTitle>
             <p className="text-xs text-muted-foreground">Last 14 days</p>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={220}>
-              <AreaChart data={DEMO_CHART} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="clicksGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#2563eb" stopOpacity={0.15} />
-                    <stop offset="95%" stopColor="#2563eb" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                <XAxis
-                  dataKey="date"
-                  tick={{ fontSize: 11 }}
-                  tickLine={false}
-                  axisLine={false}
-                />
-                <YAxis tick={{ fontSize: 11 }} tickLine={false} axisLine={false} />
-                <Tooltip
-                  contentStyle={{
-                    background: "hsl(var(--background))",
-                    border: "1px solid hsl(var(--border))",
-                    borderRadius: "8px",
-                    fontSize: "12px",
-                  }}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="clicks"
-                  stroke="#2563eb"
-                  strokeWidth={2}
-                  fill="url(#clicksGrad)"
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-            {overviewError && (
-              <p className="text-center text-xs text-muted-foreground mt-2">
-                Displaying demo data — connect backend for live analytics
-              </p>
+            {(overview?.totalClicks ?? 0) === 0 ? (
+              <div className="h-[220px] flex flex-col items-center justify-center text-muted-foreground">
+                <BarChart3 className="h-10 w-10 mb-2 opacity-20" />
+                <p className="text-sm">No clicks yet — share your links to see activity.</p>
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height={220}>
+                <AreaChart
+                  data={[]}
+                  margin={{ top: 5, right: 10, left: -20, bottom: 0 }}
+                >
+                  <defs>
+                    <linearGradient id="clicksGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.15} />
+                      <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                  <XAxis dataKey="date" tick={{ fontSize: 11 }} tickLine={false} axisLine={false} />
+                  <YAxis tick={{ fontSize: 11 }} tickLine={false} axisLine={false} />
+                  <Tooltip contentStyle={{ background: "hsl(var(--background))", border: "1px solid hsl(var(--border))", borderRadius: "8px", fontSize: "12px" }} />
+                  <Area type="monotone" dataKey="clicks" stroke="hsl(var(--primary))" strokeWidth={2} fill="url(#clicksGrad)" />
+                </AreaChart>
+              </ResponsiveContainer>
             )}
           </CardContent>
         </Card>

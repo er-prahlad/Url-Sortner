@@ -18,7 +18,7 @@ export function Logo({ className, iconOnly }: LogoProps) {
       </div>
       {!iconOnly && (
         <span className="text-foreground">
-          Link<span className="text-primary">Short</span>
+          Link<span className="text-primary">Shortner</span>
         </span>
       )}
     </Link>
