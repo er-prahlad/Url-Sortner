@@ -11,32 +11,19 @@ import { useAuth } from "@/hooks/useAuth";
 import { useSEO } from "@/hooks/useSEO";
 
 const FEATURES = [
-  { icon: Zap,      title: "Instant Shortening",    desc: "Generate a branded short link in under a second. No setup, no delays." },
-  { icon: Tag,      title: "Custom Aliases",         desc: "Create memorable links with your own custom alias for better brand recall." },
-  { icon: QrCode,   title: "QR Code Generation",    desc: "Download pixel-perfect QR codes in PNG or SVG format for any link." },
-  { icon: BarChart3,title: "Real-Time Analytics",   desc: "Track clicks, geolocations, devices, and referrers as they happen." },
-  { icon: Clock,    title: "Link Expiration",        desc: "Set automatic expiry dates so links stop working exactly when you need." },
-  { icon: Shield,   title: "Secure & Reliable",     desc: "Every link is protected with HTTPS. 99.9% uptime SLA." },
+  { icon: Zap,      title: "Instant Shortening",  desc: "Generate a branded short link in under a second. No setup, no delays." },
+  { icon: Tag,      title: "Custom Aliases",       desc: "Create memorable links with your own custom alias for better brand recall." },
+  { icon: QrCode,   title: "QR Code Generation",  desc: "Download pixel-perfect QR codes in PNG or SVG format for any link." },
+  { icon: BarChart3,title: "Real-Time Analytics", desc: "Track clicks, geolocations, devices, and referrers as they happen." },
+  { icon: Clock,    title: "Link Expiration",      desc: "Set automatic expiry dates so links stop working exactly when you need." },
+  { icon: Shield,   title: "Secure & Reliable",   desc: "Every link is protected with HTTPS. 99.9% uptime SLA." },
 ];
 
 const HOW_IT_WORKS = [
-  { step: "01", icon: Link2,            title: "Paste your long URL",        desc: "Copy any long web address and paste it into the input field." },
-  { step: "02", icon: MousePointerClick,title: "Generate your short link",   desc: "Click 'Shorten URL' and get a compact, shareable link instantly." },
-  { step: "03", icon: Share2,           title: "Share and track",            desc: "Share anywhere and monitor every click from your dashboard." },
+  { step: "01", icon: Link2,             title: "Paste your long URL",      desc: "Copy any long web address and paste it into the input field." },
+  { step: "02", icon: MousePointerClick, title: "Generate your short link", desc: "Click 'Shorten URL' and get a compact, shareable link instantly." },
+  { step: "03", icon: Share2,            title: "Share and track",          desc: "Share anywhere and monitor every click from your dashboard." },
 ];
-
-function useScrollAnimation() {
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => entries.forEach((e) => {
-        if (e.isIntersecting) e.target.classList.add("visible");
-      }),
-      { threshold: 0.15 }
-    );
-    document.querySelectorAll(".animate-on-scroll").forEach((el) => observer.observe(el));
-    return () => observer.disconnect();
-  }, []);
-}
 
 export function HomePage() {
   useSEO({
@@ -44,12 +31,11 @@ export function HomePage() {
     description: "LinkShortner — Free URL shortener with real-time analytics, custom aliases, QR codes, and link management.",
     keywords: "url shortener, free link shortener, custom short links, qr code, link analytics, linkshortner",
   });
-  useScrollAnimation();
 
   const { isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
 
-  // Redirect logged-in users straight to their dashboard
+  // Redirect logged-in users to dashboard
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
       navigate("/dashboard", { replace: true });
@@ -114,19 +100,16 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* ── How it works ──────────────────────────────────────────────────── */}
+      {/* ── How it works ── NO animate-on-scroll, always visible ─────────── */}
       <section className="py-20 bg-background">
         <div className="container">
-          <div className="text-center mb-12 animate-on-scroll">
+          <div className="text-center mb-12">
             <h2 className="text-3xl font-bold tracking-tight mb-3">How It Works</h2>
             <p className="text-muted-foreground">Get your short link in 3 simple steps.</p>
           </div>
           <div className="grid sm:grid-cols-3 gap-8 max-w-4xl mx-auto">
-            {HOW_IT_WORKS.map(({ step, icon: Icon, title, desc }, i) => (
-              <div
-                key={step}
-                className={`flex flex-col items-center text-center group animate-on-scroll animate-on-scroll-delay-${i + 1}`}
-              >
+            {HOW_IT_WORKS.map(({ step, icon: Icon, title, desc }) => (
+              <div key={step} className="flex flex-col items-center text-center group">
                 <div className="relative mb-5">
                   <div className="h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
                     <Icon className="h-7 w-7 text-primary" />
@@ -143,20 +126,20 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* ── Features ──────────────────────────────────────────────────────── */}
+      {/* ── Features ── NO animate-on-scroll, always visible ──────────────── */}
       <section id="features" className="py-20 bg-muted/30 dark:bg-black/40">
         <div className="container">
-          <div className="text-center mb-12 animate-on-scroll">
+          <div className="text-center mb-12">
             <h2 className="text-3xl font-bold tracking-tight mb-3">Powerful Features</h2>
             <p className="text-muted-foreground max-w-md mx-auto">
               Everything you need to create, manage, and track your short links.
             </p>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
-            {FEATURES.map(({ icon: Icon, title, desc }, i) => (
+            {FEATURES.map(({ icon: Icon, title, desc }) => (
               <div
                 key={title}
-                className={`group rounded-xl border bg-background p-6 hover:shadow-md hover:border-primary/40 transition-all hover:-translate-y-0.5 animate-on-scroll animate-on-scroll-delay-${(i % 3) + 1}`}
+                className="group rounded-xl border bg-background p-6 hover:shadow-md hover:border-primary/40 transition-all hover:-translate-y-0.5"
               >
                 <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
                   <Icon className="h-5 w-5 text-primary" />
@@ -170,7 +153,7 @@ export function HomePage() {
       </section>
 
       {/* ── CTA ───────────────────────────────────────────────────────────── */}
-      <section className="py-20 bg-primary text-primary-foreground animate-on-scroll">
+      <section className="py-20 bg-primary text-primary-foreground">
         <div className="container text-center">
           <h2 className="text-3xl font-bold mb-4">Ready to shorten smarter?</h2>
           <p className="text-primary-foreground/80 mb-8 max-w-md mx-auto">

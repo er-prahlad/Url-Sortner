@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { Link, NavLink } from "react-router-dom";
-import { Menu, X, Moon, Sun } from "lucide-react";
+import { Link, NavLink, useNavigate } from "react-router-dom";
+import { Menu, X, Moon, Sun, LayoutDashboard, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Logo } from "./Logo";
 import { useThemeContext } from "@/context/ThemeProvider";
+import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 
 const NAV_LINKS = [
@@ -16,8 +17,16 @@ const NAV_LINKS = [
 export function Navbar() {
   const [open, setOpen] = useState(false);
   const { resolved, setTheme } = useThemeContext();
+  const { isAuthenticated, user, logout } = useAuth();
+  const navigate = useNavigate();
 
   const toggleTheme = () => setTheme(resolved === "dark" ? "light" : "dark");
+
+  const handleLogout = async () => {
+    setOpen(false);
+    await logout();
+    navigate("/login");
+  };
 
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -30,6 +39,7 @@ export function Navbar() {
             <NavLink
               key={l.to}
               to={l.to}
+              end={l.to === "/"}
               className={({ isActive }) =>
                 cn(
                   "text-sm font-medium transition-colors hover:text-primary",
@@ -42,6 +52,7 @@ export function Navbar() {
           ))}
         </nav>
 
+        {/* Desktop right actions */}
         <div className="hidden md:flex items-center gap-3">
           <button
             onClick={toggleTheme}
@@ -50,12 +61,39 @@ export function Navbar() {
           >
             {resolved === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           </button>
-          <Button variant="ghost" size="sm" asChild>
-            <Link to="/login">Login</Link>
-          </Button>
-          <Button size="sm" asChild>
-            <Link to="/signup">Sign Up</Link>
-          </Button>
+
+          {isAuthenticated ? (
+            /* ── Logged-in state ── */
+            <>
+              <span className="text-sm text-muted-foreground hidden lg:block truncate max-w-[140px]">
+                {user?.name}
+              </span>
+              <Button size="sm" asChild>
+                <Link to="/dashboard">
+                  <LayoutDashboard className="h-4 w-4 mr-1.5" />
+                  Dashboard
+                </Link>
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={handleLogout}
+                className="text-muted-foreground hover:text-destructive"
+              >
+                <LogOut className="h-4 w-4" />
+              </Button>
+            </>
+          ) : (
+            /* ── Guest state ── */
+            <>
+              <Button variant="ghost" size="sm" asChild>
+                <Link to="/login">Login</Link>
+              </Button>
+              <Button size="sm" asChild>
+                <Link to="/signup">Sign Up</Link>
+              </Button>
+            </>
+          )}
         </div>
 
         {/* Mobile hamburger */}
@@ -84,6 +122,7 @@ export function Navbar() {
             <NavLink
               key={l.to}
               to={l.to}
+              end={l.to === "/"}
               onClick={() => setOpen(false)}
               className={({ isActive }) =>
                 cn(
@@ -95,13 +134,31 @@ export function Navbar() {
               {l.label}
             </NavLink>
           ))}
+
           <div className="flex flex-col gap-2 pt-2 border-t">
-            <Button variant="outline" asChild>
-              <Link to="/login" onClick={() => setOpen(false)}>Login</Link>
-            </Button>
-            <Button asChild>
-              <Link to="/signup" onClick={() => setOpen(false)}>Sign Up</Link>
-            </Button>
+            {isAuthenticated ? (
+              <>
+                <Button asChild onClick={() => setOpen(false)}>
+                  <Link to="/dashboard">
+                    <LayoutDashboard className="h-4 w-4 mr-1.5" />
+                    Dashboard
+                  </Link>
+                </Button>
+                <Button variant="outline" onClick={handleLogout} className="text-destructive border-destructive/30">
+                  <LogOut className="h-4 w-4 mr-1.5" />
+                  Logout
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button variant="outline" asChild>
+                  <Link to="/login" onClick={() => setOpen(false)}>Login</Link>
+                </Button>
+                <Button asChild>
+                  <Link to="/signup" onClick={() => setOpen(false)}>Sign Up</Link>
+                </Button>
+              </>
+            )}
           </div>
         </div>
       )}

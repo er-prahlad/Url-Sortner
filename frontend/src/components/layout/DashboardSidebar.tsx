@@ -33,8 +33,10 @@ export function DashboardSidebar() {
   const navigate = useNavigate();
 
   const handleLogout = async () => {
+    // Direct logout — no confirmation
+    setMobileOpen(false);
     await logout();
-    navigate("/login");
+    navigate("/login", { replace: true });
   };
 
   const initials = user?.name
