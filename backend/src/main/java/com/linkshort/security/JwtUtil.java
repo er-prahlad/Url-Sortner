@@ -20,6 +20,18 @@ public class JwtUtil {
 
     private final JwtProperties props;
 
+    @jakarta.annotation.PostConstruct
+    void validate() {
+        // Fail fast at startup if JWT_SECRET is missing or invalid
+        try {
+            signingKey();
+            log.info("JWT signing key validated successfully");
+        } catch (IllegalStateException e) {
+            log.error("FATAL: {}", e.getMessage());
+            throw e;
+        }
+    }
+
     // ── Token generation ────────────────────────────────────────────────────
 
     public String generateAccessToken(UserDetails user) {
@@ -81,7 +93,22 @@ public class JwtUtil {
     }
 
     private SecretKey signingKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(props.getSecret());
-        return Keys.hmacShaKeyFor(keyBytes);
+        String secret = props.getSecret();
+        if (secret == null || secret.isBlank()) {
+            throw new IllegalStateException(
+                "JWT_SECRET environment variable is not set. " +
+                "Generate one with: openssl rand -base64 32");
+        }
+        try {
+            byte[] keyBytes = Decoders.BASE64.decode(secret);
+            if (keyBytes.length < 32) {
+                throw new IllegalStateException(
+                    "JWT_SECRET is too short. Must be a base64-encoded key of at least 256 bits (32 bytes).");
+            }
+            return Keys.hmacShaKeyFor(keyBytes);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalStateException(
+                "JWT_SECRET is not valid base64. Generate a new one with: openssl rand -base64 32", e);
+        }
     }
 }
