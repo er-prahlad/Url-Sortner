@@ -5,6 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Logo } from "./Logo";
 import { useThemeContext } from "@/context/ThemeProvider";
 import { useAuth } from "@/hooks/useAuth";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle,
+  DialogDescription, DialogFooter,
+} from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 
 const NAV_LINKS = [
@@ -15,17 +19,29 @@ const NAV_LINKS = [
 ];
 
 export function Navbar() {
-  const [open, setOpen] = useState(false);
+  const [open,         setOpen]         = useState(false);
+  const [logoutOpen,   setLogoutOpen]   = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const { resolved, setTheme } = useThemeContext();
   const { isAuthenticated, user, logout } = useAuth();
   const navigate = useNavigate();
 
   const toggleTheme = () => setTheme(resolved === "dark" ? "light" : "dark");
 
-  const handleLogout = async () => {
+  const askLogout = () => {
     setOpen(false);
-    await logout();
-    navigate("/login");
+    setLogoutOpen(true);
+  };
+
+  const confirmLogout = async () => {
+    setIsLoggingOut(true);
+    try {
+      await logout();
+      navigate("/login", { replace: true });
+    } finally {
+      setIsLoggingOut(false);
+      setLogoutOpen(false);
+    }
   };
 
   return (
@@ -77,7 +93,7 @@ export function Navbar() {
               <Button
                 size="sm"
                 variant="ghost"
-                onClick={handleLogout}
+                onClick={askLogout}
                 className="text-muted-foreground hover:text-destructive"
               >
                 <LogOut className="h-4 w-4" />
@@ -144,7 +160,7 @@ export function Navbar() {
                     Dashboard
                   </Link>
                 </Button>
-                <Button variant="outline" onClick={handleLogout} className="text-destructive border-destructive/30">
+                <Button variant="outline" onClick={askLogout} className="text-destructive border-destructive/30">
                   <LogOut className="h-4 w-4 mr-1.5" />
                   Logout
                 </Button>
@@ -162,6 +178,34 @@ export function Navbar() {
           </div>
         </div>
       )}
+
+      {/* ── Logout confirmation dialog ─────────────────────────────────── */}
+      <Dialog open={logoutOpen} onOpenChange={(v) => !isLoggingOut && setLogoutOpen(v)}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Sign out?</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to log out of your account?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="outline"
+              onClick={() => setLogoutOpen(false)}
+              disabled={isLoggingOut}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={confirmLogout}
+              loading={isLoggingOut}
+            >
+              Yes, log out
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </header>
   );
 }
