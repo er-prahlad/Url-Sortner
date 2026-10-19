@@ -1,5 +1,6 @@
 import { useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";import {
+import { Link, useNavigate } from "react-router-dom";
+import {
   Zap, Tag, QrCode, BarChart3, Clock, Shield,
   ArrowRight, Link2, Share2, MousePointerClick,
 } from "lucide-react";
@@ -58,9 +59,6 @@ export function HomePage() {
 
   // While checking auth, render nothing to avoid flash
   if (isLoading || isAuthenticated) return null;
-
-  const handleSuccess = (link: ShortLink) => setResults((p) => [link, ...p]);
-  const handleDismiss = (id: string) => setResults((p) => p.filter((l) => l.id !== id));
 
   return (
     <div className="min-h-screen flex flex-col">

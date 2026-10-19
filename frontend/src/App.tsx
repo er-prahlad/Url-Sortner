@@ -4,6 +4,7 @@ import { ThemeProvider } from "@/context/ThemeProvider";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { Toaster } from "@/components/ui/toaster";
+import { ScrollToTop } from "@/components/ScrollToTop";
 
 // Public pages
 import { HomePage }     from "@/pages/HomePage";
@@ -36,8 +37,8 @@ export default function App() {
     <ErrorBoundary>
       <ThemeProvider>
         <AuthProvider>
-          <Routes>
-            {/* Public */}
+          <ScrollToTop />
+          <Routes>            {/* Public */}
             <Route path="/"          element={<HomePage />} />
             <Route path="/features"  element={<FeaturesPage />} />
             <Route path="/pricing"   element={<PricingPage />} />
